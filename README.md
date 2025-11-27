@@ -18,8 +18,7 @@ A atividade consiste em transformar critérios de aceitação de três história
 ├── login.feature
 └── checkout.feature
 
-yaml
-Copiar código
+
 
 Cada arquivo representa uma funcionalidade específica, conforme solicitado no exercício.
 
