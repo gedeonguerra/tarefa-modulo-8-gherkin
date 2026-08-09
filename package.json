@@ -1,0 +1,14 @@
+{
+  "name": "tarefa-modulo-8-gherkin-playwright",
+  "version": "1.0.0",
+  "description": "Automação BDD com Playwright + playwright-bdd sobre Practice Software Testing",
+  "scripts": {
+    "bddgen": "bddgen",
+    "test": "npm run bddgen && playwright test",
+    "test:headed": "npm run bddgen && playwright test --headed"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.47.0",
+    "playwright-bdd": "^7.2.0"
+  }
+}
