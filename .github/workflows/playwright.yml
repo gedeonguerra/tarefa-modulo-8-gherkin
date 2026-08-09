@@ -20,9 +20,7 @@ jobs:
           cd app-under-test
           docker compose up -d
           echo "Waiting for laravel-api dependencies to install..."
-          timeout 600 bash -c 'until docker compose exec -T laravel-api test -f vendor/autoload.php; do sleep 5; done' || true
-          echo "Retrying composer install to ensure it completed..."
-          docker compose exec -T laravel-api sh -c "COMPOSER_PROCESS_TIMEOUT=600 composer install --no-dev --optimize-autoloader --ignore-platform-req=ext-ffi"
+          timeout 600 bash -c 'until docker compose exec -T laravel-api test -f vendor/autoload.php; do sleep 5; done'
           docker compose exec -T laravel-api php artisan migrate:refresh --seed
 
       - uses: actions/setup-node@v4
