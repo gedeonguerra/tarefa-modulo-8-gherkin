@@ -20,7 +20,9 @@ jobs:
           cd app-under-test
           docker compose up -d
           echo "Waiting for laravel-api dependencies to install..."
-          timeout 180 bash -c 'until docker compose exec -T laravel-api test -f vendor/autoload.php; do sleep 3; done'
+          timeout 600 bash -c 'until docker compose exec -T laravel-api test -f vendor/autoload.php; do sleep 5; done' || true
+          echo "Retrying composer install to ensure it completed..."
+          docker compose exec -T laravel-api sh -c "COMPOSER_PROCESS_TIMEOUT=600 composer install --no-dev --optimize-autoloader --ignore-platform-req=ext-ffi"
           docker compose exec -T laravel-api php artisan migrate:refresh --seed
 
       - uses: actions/setup-node@v4
@@ -31,7 +33,7 @@ jobs:
       - run: npx playwright install --with-deps
 
       - name: Wait for app to be ready
-        run: npx wait-on http://localhost:4200
+        run: npx wait-on http://localhost:4200 --timeout 600000
 
       - run: npm test
 
