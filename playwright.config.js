@@ -9,7 +9,7 @@ const testDir = defineBddConfig({
 module.exports = defineConfig({
   testDir,
   use: {
-    baseURL: "https://practicesoftwaretesting.com",
+    baseURL: "http://localhost:4200",
     trace: "on-first-retry",
   },
   projects: [
