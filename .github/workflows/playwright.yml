@@ -9,28 +9,30 @@ jobs:
   playwright-run:
     runs-on: ubuntu-latest
 
-    services:
-      practice-app:
-        image: testsmith/practice-software-testing:latest
-        ports:
-          - 4200:4200
-        options: >-
-          --health-cmd "curl -f http://localhost:4200 || exit 1"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 10
-
     steps:
       - uses: actions/checkout@v4
+
+      - name: Clone Practice Software Testing app
+        run: git clone --depth 1 https://github.com/testsmith-io/practice-software-testing.git app-under-test
+
+      - name: Start app via docker compose
+        run: |
+          cd app-under-test
+          docker compose up -d
+          docker compose exec -T laravel-api php artisan migrate:refresh --seed
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: "npm"
       - run: npm install
       - run: npx playwright install --with-deps
+
       - name: Wait for app to be ready
         run: npx wait-on http://localhost:4200
+
       - run: npm test
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:
