@@ -1,0 +1,13 @@
+{
+  "name": "tarefa-modulo-8-gherkin-cypress",
+  "version": "1.0.0",
+  "description": "Automação BDD com Cypress + Cucumber sobre Practice Software Testing",
+  "scripts": {
+    "test": "cypress run",
+    "test:open": "cypress open"
+  },
+  "devDependencies": {
+    "@badeball/cypress-cucumber-preprocessor": "^20.0.0",
+    "cypress": "^13.6.0"
+  }
+}

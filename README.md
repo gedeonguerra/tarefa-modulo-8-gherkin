@@ -1,39 +1,48 @@
-# BDD/Gherkin — Practice Software Testing
+# BDD/Gherkin + Cypress — Practice Software Testing
 
 > Projeto de estudo/exercício de curso — mantido e expandido como registro de aprendizado em BDD.
 
-Especificação de cenários em Gherkin, automatizados sobre o [Practice Software Testing](https://practicesoftwaretesting.com/) — um e-commerce fake mantido especificamente para prática de automação de testes (login, catálogo de produtos, carrinho, checkout).
+Automação BDD com **Cypress + Cucumber** sobre o [Practice Software Testing](https://practicesoftwaretesting.com/), cobrindo login, busca/filtro de produtos, carrinho e checkout.
 
-Este repositório tem **duas branches de automação**, com a mesma especificação Gherkin implementada em frameworks diferentes:
+Esta é a branch de automação com **Cypress**. Veja também:
+- Branch [`playwright-automation`](../../tree/playwright-automation) — mesma especificação, automatizada com Playwright
+- Branch [`main`](../../tree/main) — apenas a especificação Gherkin, sem automação
 
-| Branch | Framework | Runner BDD |
-|---|---|---|
-| [`cypress-automation`](../../tree/cypress-automation) | Cypress | @badeball/cypress-cucumber-preprocessor |
-| [`playwright-automation`](../../tree/playwright-automation) | Playwright | playwright-bdd |
+## Stack
 
-A branch `main` contém apenas a especificação (os arquivos `.feature`), sem automação.
+- [Cypress](https://www.cypress.io/)
+- [@badeball/cypress-cucumber-preprocessor](https://github.com/badeball/cypress-cucumber-preprocessor)
+- GitHub Actions (CI)
 
-## Funcionalidades especificadas
+## Estrutura
 
-| Arquivo | Cobertura |
+```
+cypress/
+├── e2e/
+│   ├── features/              # arquivos .feature (Gherkin)
+│   └── step_definitions/      # implementação dos steps
+├── pages/                     # Page Objects
+└── support/
+```
+
+## Funcionalidades cobertas
+
+| Feature | Cenários |
 |---|---|
-| [`features/login.feature`](./features/login.feature) | Login válido/inválido, logout |
-| [`features/busca-produto.feature`](./features/busca-produto.feature) | Busca, filtro por categoria, ordenação |
-| [`features/carrinho.feature`](./features/carrinho.feature) | Adicionar, alterar quantidade, remover item |
-| [`features/checkout.feature`](./features/checkout.feature) | Fluxo completo de checkout, validação de campos, formas de pagamento |
+| `login.feature` | Login válido/inválido, logout |
+| `busca-produto.feature` | Busca, filtro por categoria, ordenação |
+| `carrinho.feature` | Adicionar, alterar quantidade, remover |
+| `checkout.feature` | Fluxo completo, validação de endereço, formas de pagamento |
 
-## Boas práticas aplicadas
+## Como rodar
 
-- *Background* para reaproveitamento de contexto
-- *Scenario Outline* com tabelas de exemplos (*Examples*)
-- Separação por funcionalidade
-- Cenários de caminho feliz e caminho negativo
+```bash
+npm install
+npm test          # headless
+npm run test:open # modo interativo
+```
 
-## Tecnologias
-
-- Gherkin
-- Cypress (branch `cypress-automation`)
-- Playwright (branch `playwright-automation`)
+> Os seletores (`data-test`) seguem a convenção documentada pelo Practice Software Testing. Se o site atualizar a versão, pode ser necessário revisar os Page Objects.
 
 ## Autor
 **Gedeon Guerra**
