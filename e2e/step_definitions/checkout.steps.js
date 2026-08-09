@@ -27,7 +27,7 @@ When("eu preencher todos os dados de entrega obrigatórios", async ({ page }) =>
   await new CheckoutPage(page).fillAddress(ENDERECO_VALIDO);
 });
 
-When("eu selecionar a forma de pagamento {string}", async ({ page }, forma) => {
+When("selecionar a forma de pagamento {string}", async ({ page }, forma) => {
   
 });
 
