@@ -15,7 +15,7 @@ class LoginPage {
     await this.page.click("[data-test='login-submit']");
   }
   errorMessage() {
-    return this.page.locator("[data-test='login-error']");
+    return this.page.locator("[data-test='login-error'], [data-test='email-error'], [data-test='password-error']");
   }
   async logout() {
     await this.page.click("[data-test='nav-menu']");

@@ -6,13 +6,13 @@ class CartPage {
     return this.page.locator("[data-test='cart-quantity']");
   }
   async visit() {
-    await this.page.goto("/checkout");
+    await this.page.click("[data-test='cart-quantity']");
   }
   async setQuantity(value) {
     await this.page.fill("[data-test='quantity']", String(value));
   }
   async removeItem() {
-    await this.page.click("[data-test='remove-line']");
+    await this.page.click(".btn-danger");
   }
   emptyCartMessage() {
     return this.page.getByText("Cart is empty");
