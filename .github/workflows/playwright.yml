@@ -38,8 +38,11 @@ jobs:
           cd app-under-test
           echo "--- docker compose logs laravel-api (tail 50) ---"
           docker compose logs laravel-api --tail 50
-          echo "--- curl -v http://localhost:8091/api/products ---"
-          curl -v http://localhost:8091/api/products
+          echo "--- curl -s (body bruto) http://localhost:8091/api/products ---"
+          curl -s http://localhost:8091/api/products | head -c 3000
+          echo
+          echo "--- storage/logs/laravel.log (tail 100) ---"
+          docker compose exec -T laravel-api tail -n 100 storage/logs/laravel.log
           echo "--- php artisan about ---"
           docker compose exec -T laravel-api php artisan about
 
