@@ -4,6 +4,7 @@ class ProductsPage {
   }
   async visit() {
     await this.page.goto("/");
+    await this.productNames().first().waitFor({ state: "visible", timeout: 15000 }).catch(() => {});
   }
   async search(term) {
     const responsePromise = this.page.waitForResponse(resp => resp.url().includes("/products/search") && resp.status() === 200);

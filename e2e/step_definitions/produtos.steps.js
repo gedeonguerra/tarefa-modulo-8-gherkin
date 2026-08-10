@@ -11,10 +11,13 @@ When("eu buscar pelo termo {string}", async ({ page }, termo) => {
 });
 
 Then("devo ver produtos na lista de resultados cujo nome contenha {string}", async ({ page }, termo) => {
-  const names = await new ProductsPage(page).productNames().allTextContents();
-  for (const name of names) {
-    expect(name.toLowerCase()).toContain(termo.toLowerCase());
-  }
+  await expect(async () => {
+    const names = await new ProductsPage(page).productNames().allTextContents();
+    expect(names.length).toBeGreaterThan(0);
+    for (const name of names) {
+      expect(name.toLowerCase()).toContain(termo.toLowerCase());
+    }
+  }).toPass({ timeout: 10000 });
 });
 
 Then("devo ver a mensagem {string}", async ({ page }, mensagem) => {
