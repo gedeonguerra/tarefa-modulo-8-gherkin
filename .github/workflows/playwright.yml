@@ -5,9 +5,14 @@ on:
     branches: ["playwright-automation"]
   workflow_dispatch:
 
+concurrency: production_environment
+
 jobs:
   playwright-run:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
+    env:
+      SPRINT: sprint5
+      DISABLE_LOGGING: "true"
 
     steps:
       - uses: actions/checkout@v4
@@ -17,44 +22,68 @@ jobs:
           git clone --depth 1 https://github.com/testsmith-io/practice-software-testing.git app-under-test
           rm -rf app-under-test/.git
 
-      - name: Start app via docker compose
+      - name: Start containers
         run: |
           cd app-under-test
-          docker compose up -d
-          echo "Waiting for mariadb to accept connections..."
-          timeout 300 bash -c 'until docker compose exec -T mariadb mysqladmin ping -h localhost -uroot -proot --silent; do sleep 5; done'
-          echo "Waiting for laravel-api dependencies to install..."
-          timeout 600 bash -c 'until docker compose exec -T laravel-api test -f vendor/autoload.php; do sleep 5; done'
+          docker compose -f docker-compose.yml up -d --force-recreate
+
+      - name: Sleep for 30 seconds (wait for containers)
+        run: sleep 30s
+
+      - name: Install Composer dependencies
+        run: |
+          cd app-under-test
+          docker compose exec -T -u root laravel-api composer install --no-dev --optimize-autoloader --ignore-platform-req=ext-ffi
+
+      - name: Wait for database to be ready
+        run: |
+          cd app-under-test
+          echo "Waiting for MariaDB..."
+          for i in $(seq 1 30); do
+            if docker compose exec -T mariadb mysqladmin ping -h localhost -u root -proot --silent 2>/dev/null; then
+              echo "MariaDB is ready!"
+              break
+            fi
+            echo "Attempt $i/30 - not ready yet, waiting 2s..."
+            sleep 2
+          done
+
+      - name: Create & Seed database
+        run: |
+          cd app-under-test
           docker compose exec -T laravel-api php artisan migrate:refresh --seed
+
+      - name: Smoke test - API status
+        run: curl -sf -X GET 'http://localhost:8091/status'
+
+      - name: Smoke test - login
+        run: |
+          curl -sf -X POST 'http://localhost:8091/users/login' \
+            -H 'Content-Type: application/json' \
+            --data-raw '{"email":"customer@practicesoftwaretesting.com","password":"welcome01"}'
+
+      - name: Wait for Angular UI to be ready
+        run: |
+          echo "Waiting for Angular UI on port 4200..."
+          for i in $(seq 1 60); do
+            if curl -s -o /dev/null -w "%{http_code}" http://localhost:4200 | grep -q "200"; then
+              echo "Angular UI is ready!"
+              exit 0
+            fi
+            echo "Attempt $i/60 - not ready yet, waiting 5s..."
+            sleep 5
+          done
+          echo "Angular UI failed to start within 5 minutes"
+          cd app-under-test && docker compose logs angular-ui
+          exit 1
 
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: "npm"
+
       - run: npm ci
       - run: npx playwright install --with-deps
-
-      - name: Wait for app to be ready
-        run: npx wait-on http://localhost:4200 --timeout 600000
-
-      - name: Wait for API to be ready
-        run: |
-          cd app-under-test
-          npx wait-on http://localhost:8091/products --timeout 600000 || {
-            echo "=== php artisan --version (bootstrap direto, sem nginx) ==="
-            docker compose exec -T laravel-api php artisan --version
-            echo "=== php artisan config:clear ==="
-            docker compose exec -T laravel-api php artisan config:clear
-            echo "=== php artisan route:list (products) ==="
-            docker compose exec -T laravel-api php artisan route:list --path=products
-            echo "=== storage/logs ==="
-            docker compose exec -T laravel-api ls -la storage/logs
-            echo "=== permissões storage/bootstrap ==="
-            docker compose exec -T laravel-api ls -la storage bootstrap/cache
-            echo "=== stdout/stderr do container laravel-api ==="
-            docker compose logs laravel-api --tail=80
-            exit 1
-          }
 
       - run: npm test
 
