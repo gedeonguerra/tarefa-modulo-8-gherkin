@@ -13,28 +13,32 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Clone Practice Software Testing app
-        run: git clone --depth 1 https://github.com/testsmith-io/practice-software-testing.git app-under-test
+        run: |
+          git clone --depth 1 https://github.com/testsmith-io/practice-software-testing.git app-under-test
+          rm -rf app-under-test/.git
 
       - name: Start app via docker compose
         run: |
           cd app-under-test
           docker compose up -d
+          echo "Waiting for mariadb to accept connections..."
+          timeout 300 bash -c 'until docker compose exec -T mariadb mysqladmin ping -h localhost -uroot -proot --silent; do sleep 5; done'
           echo "Waiting for laravel-api dependencies to install..."
           timeout 600 bash -c 'until docker compose exec -T laravel-api test -f vendor/autoload.php; do sleep 5; done'
           docker compose exec -T laravel-api php artisan migrate:refresh --seed
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: "npm"
-      - run: npm install
+      - run: npm ci
       - run: npx playwright install --with-deps
 
       - name: Wait for app to be ready
         run: npx wait-on http://localhost:4200 --timeout 600000
 
       - name: Wait for API to be ready
-        run: npx wait-on http://localhost:8091/api/products --timeout 600000
+        run: npx wait-on http://localhost:8091/products --timeout 600000
 
       - run: npm test
 
