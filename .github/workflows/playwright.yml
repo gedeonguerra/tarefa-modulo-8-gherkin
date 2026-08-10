@@ -41,13 +41,18 @@ jobs:
         run: |
           cd app-under-test
           npx wait-on http://localhost:8091/products --timeout 600000 || {
-            echo "=== laravel.log ==="
-            docker compose exec -T laravel-api cat storage/logs/laravel.log 2>&1 | tail -150
-            echo "=== corpo da resposta 500 ==="
-            curl -s http://localhost:8091/products
-            echo ""
-            echo "=== env dentro do container ==="
-            docker compose exec -T laravel-api env | grep -i "DB_\|APP_KEY\|APP_ENV"
+            echo "=== php artisan --version (bootstrap direto, sem nginx) ==="
+            docker compose exec -T laravel-api php artisan --version
+            echo "=== php artisan config:clear ==="
+            docker compose exec -T laravel-api php artisan config:clear
+            echo "=== php artisan route:list (products) ==="
+            docker compose exec -T laravel-api php artisan route:list --path=products
+            echo "=== storage/logs ==="
+            docker compose exec -T laravel-api ls -la storage/logs
+            echo "=== permissões storage/bootstrap ==="
+            docker compose exec -T laravel-api ls -la storage bootstrap/cache
+            echo "=== stdout/stderr do container laravel-api ==="
+            docker compose logs laravel-api --tail=80
             exit 1
           }
 
