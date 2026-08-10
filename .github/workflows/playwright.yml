@@ -38,7 +38,21 @@ jobs:
         run: npx wait-on http://localhost:4200 --timeout 600000
 
       - name: Wait for API to be ready
-        run: npx wait-on http://localhost:8091/products --timeout 600000
+        run: |
+          cd app-under-test
+          npx wait-on http://localhost:8091/products --timeout 600000 || {
+            echo "=== docker compose ps ==="
+            docker compose ps
+            echo "=== web logs ==="
+            docker compose logs web --tail=100
+            echo "=== laravel-api logs ==="
+            docker compose logs laravel-api --tail=100
+            echo "=== mariadb logs ==="
+            docker compose logs mariadb --tail=50
+            echo "=== curl direto ==="
+            curl -v http://localhost:8091/products || true
+            exit 1
+          }
 
       - run: npm test
 
