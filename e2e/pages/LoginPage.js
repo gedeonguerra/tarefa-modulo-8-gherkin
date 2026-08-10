@@ -18,7 +18,9 @@ class LoginPage {
     return this.page.locator("[data-test='login-error'], [data-test='email-error'], [data-test='password-error']");
   }
   async logout() {
-    await this.page.click("[data-test='nav-menu']");
+    const navMenu = this.page.locator("[data-test='nav-menu']");
+    await navMenu.waitFor({ state: "visible", timeout: 30000 });
+    await navMenu.click();
     await this.page.click("[data-test='nav-sign-out']");
   }
 }
