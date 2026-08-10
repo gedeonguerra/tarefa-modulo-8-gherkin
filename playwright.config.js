@@ -9,7 +9,12 @@ const testDir = defineBddConfig({
 module.exports = defineConfig({
   testDir,
   timeout: 60000,
+  forbidOnly: !!process.env.CI,
+  retries: process.env.CI ? 1 : 0,
   workers: 1,
+  reporter: process.env.CI
+    ? [["dot"], ["html", { open: "never" }]]
+    : "list",
   expect: {
     timeout: 15000,
   },

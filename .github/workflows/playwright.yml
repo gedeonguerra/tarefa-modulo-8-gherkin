@@ -5,90 +5,122 @@ on:
     branches: ["playwright-automation"]
   workflow_dispatch:
 
-concurrency: production_environment
+permissions:
+  contents: read
+
+concurrency:
+  group: playwright-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   playwright-run:
     runs-on: ubuntu-22.04
+    timeout-minutes: 45
     env:
       SPRINT: sprint5
       DISABLE_LOGGING: "true"
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout test suite
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Clone Practice Software Testing app
-        run: |
-          git clone --depth 1 https://github.com/testsmith-io/practice-software-testing.git app-under-test
-          rm -rf app-under-test/.git
+      # Keep the application under test immutable. The upstream main branch
+      # switched the product UI from GET to HTTP QUERY after this revision.
+      - name: Checkout Practice Software Testing app
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: testsmith-io/practice-software-testing
+          ref: 45ac9c2198030e0426daa70f38cd112bed16181d
+          path: app-under-test
+          persist-credentials: false
 
       - name: Start containers
-        run: |
-          cd app-under-test
-          docker compose -f docker-compose.yml up -d --force-recreate
+        working-directory: app-under-test
+        run: docker compose -f docker-compose.yml up -d --force-recreate
 
-      - name: Sleep for 30 seconds (wait for containers)
-        run: sleep 30s
-
-      - name: Install Composer dependencies
+      - name: Wait for database
+        working-directory: app-under-test
         run: |
-          cd app-under-test
-          docker compose exec -T -u root laravel-api composer install --no-dev --optimize-autoloader --ignore-platform-req=ext-ffi
-
-      - name: Wait for database to be ready
-        run: |
-          cd app-under-test
-          echo "Waiting for MariaDB..."
-          for i in $(seq 1 30); do
+          for attempt in $(seq 1 60); do
             if docker compose exec -T mariadb mysqladmin ping -h localhost -u root -proot --silent 2>/dev/null; then
-              echo "MariaDB is ready!"
-              break
+              echo "MariaDB is ready."
+              exit 0
             fi
-            echo "Attempt $i/30 - not ready yet, waiting 2s..."
+            echo "MariaDB attempt ${attempt}/60; waiting 2 seconds..."
             sleep 2
           done
 
-      - name: Create & Seed database
-        run: |
-          cd app-under-test
-          docker compose exec -T laravel-api php artisan migrate:refresh --seed
-
-      - name: Smoke test - API status
-        run: curl -sf -X GET 'http://localhost:8091/status'
-
-      - name: Smoke test - login
-        run: |
-          curl -sf -X POST 'http://localhost:8091/users/login' \
-            -H 'Content-Type: application/json' \
-            --data-raw '{"email":"customer@practicesoftwaretesting.com","password":"welcome01"}'
-
-      - name: Wait for Angular UI to be ready
-        run: |
-          echo "Waiting for Angular UI on port 4200..."
-          for i in $(seq 1 60); do
-            if curl -s -o /dev/null -w "%{http_code}" http://localhost:4200 | grep -q "200"; then
-              echo "Angular UI is ready!"
-              exit 0
-            fi
-            echo "Attempt $i/60 - not ready yet, waiting 5s..."
-            sleep 5
-          done
-          echo "Angular UI failed to start within 5 minutes"
-          cd app-under-test && docker compose logs angular-ui
+          docker compose ps
+          docker compose logs --no-color --tail=100 mariadb
           exit 1
 
-      - uses: actions/setup-node@v4
+      - name: Install Composer dependencies
+        working-directory: app-under-test
+        run: docker compose exec -T -u root laravel-api composer install --no-dev --optimize-autoloader --ignore-platform-req=ext-ffi
+
+      - name: Create and seed database
+        working-directory: app-under-test
+        run: docker compose exec -T laravel-api php artisan migrate:fresh --seed
+
+      - name: Verify API and seeded products
+        run: |
+          curl --fail --silent --show-error \
+            --retry 30 --retry-all-errors --retry-delay 2 \
+            http://localhost:8091/status
+
+          curl --fail --silent --show-error \
+            --retry 10 --retry-all-errors --retry-delay 2 \
+            'http://localhost:8091/products?page=1' \
+            | jq --exit-status '.data | length > 0'
+
+          curl --fail --silent --show-error \
+            --request POST 'http://localhost:8091/users/login' \
+            --header 'Content-Type: application/json' \
+            --data-raw '{"email":"customer@practicesoftwaretesting.com","password":"welcome01"}'
+
+      - name: Wait for Angular UI
+        working-directory: app-under-test
+        run: |
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent --show-error http://localhost:4200 >/dev/null; then
+              echo "Angular UI is ready."
+              exit 0
+            fi
+            echo "Angular UI attempt ${attempt}/60; waiting 5 seconds..."
+            sleep 5
+          done
+
+          docker compose ps
+          docker compose logs --no-color --tail=200 angular-ui
+          exit 1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 22
-          cache: "npm"
+          cache: npm
 
-      - run: npm ci
-      - run: npx playwright install --with-deps
+      - name: Install test dependencies
+        run: npm ci
 
-      - run: npm test
+      - name: Install Chromium and operating-system dependencies
+        run: npx playwright install --with-deps chromium
 
-      - uses: actions/upload-artifact@v4
-        if: always()
+      - name: Run Playwright tests
+        run: npm test
+
+      - name: Show container logs after a failure
+        if: failure()
+        working-directory: app-under-test
+        run: docker compose logs --no-color --tail=300
+
+      - name: Upload Playwright report and traces
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: playwright-report
-          path: playwright-report/
+          name: playwright-report-${{ github.run_attempt }}
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: error
+          retention-days: 14
