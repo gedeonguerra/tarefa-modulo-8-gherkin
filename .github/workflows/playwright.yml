@@ -39,10 +39,16 @@ jobs:
           echo "--- docker compose logs laravel-api (tail 50) ---"
           docker compose logs laravel-api --tail 50
           echo "--- curl -s (body bruto) http://localhost:8091/api/products ---"
-          curl -s http://localhost:8091/api/products | head -c 3000
+          curl -s http://localhost:8091/api/products | head -c 3000 || true
           echo
+          echo "--- storage/ (ls -la) ---"
+          docker compose exec -T laravel-api ls -la storage/ || true
+          echo "--- storage/logs/ (ls -la) ---"
+          docker compose exec -T laravel-api ls -la storage/logs/ 2>&1 || echo "storage/logs nao existe"
+          echo "--- storage/framework/ (ls -la) ---"
+          docker compose exec -T laravel-api ls -la storage/framework/ 2>&1 || true
           echo "--- storage/logs/laravel.log (tail 100) ---"
-          docker compose exec -T laravel-api tail -n 100 storage/logs/laravel.log
+          docker compose exec -T laravel-api tail -n 100 storage/logs/laravel.log 2>&1 || echo "laravel.log nao existe"
           echo "--- php artisan about ---"
           docker compose exec -T laravel-api php artisan about
 
