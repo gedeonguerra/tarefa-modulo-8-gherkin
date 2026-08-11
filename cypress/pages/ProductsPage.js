@@ -1,6 +1,7 @@
 class ProductsPage {
   visit() {
     cy.visit("/");
+    cy.get("[data-test='product-name']", { timeout: 15000 }).should("exist");
   }
   search(term) {
     cy.get("[data-test='search-query']").clear().type(term);

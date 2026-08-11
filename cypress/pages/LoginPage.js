@@ -12,7 +12,7 @@ class LoginPage {
     cy.get("[data-test='login-submit']").click();
   }
   errorMessage() {
-    return cy.get("[data-test='login-error']");
+    return cy.get("[data-test='login-error'], [data-test='email-error'], [data-test='password-error']");
   }
   logout() {
     cy.get("[data-test='nav-menu']").click();
