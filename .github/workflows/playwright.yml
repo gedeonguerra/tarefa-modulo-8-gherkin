@@ -21,7 +21,7 @@ jobs:
           docker compose up -d
           echo "Waiting for laravel-api dependencies to install..."
           timeout 600 bash -c 'until docker compose exec -T laravel-api test -f vendor/autoload.php; do sleep 5; done'
-          docker compose exec -T laravel-api chown -R www-data:www-data storage bootstrap/cache
+          docker compose exec -T -u root laravel-api chown -R www-data:www-data storage bootstrap/cache
           docker compose exec -T laravel-api php artisan migrate:refresh --seed
 
       - uses: actions/setup-node@v4
