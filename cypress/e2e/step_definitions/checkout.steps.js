@@ -1,4 +1,5 @@
 const { Given, When, Then } = require("@badeball/cypress-cucumber-preprocessor");
+const ProductsPage = require("../../pages/ProductsPage");
 const CartPage = require("../../pages/CartPage");
 const CheckoutPage = require("../../pages/CheckoutPage");
 
@@ -12,11 +13,8 @@ const ENDERECO_VALIDO = {
 };
 
 Given("tenho o produto {string} no carrinho", (nome) => {
-  cy.visit("/");
-  cy.contains("[data-test='product-name']", nome)
-    .parents(".card")
-    .find("[data-test='add-to-cart']")
-    .click();
+  ProductsPage.visit();
+  ProductsPage.addToCartByName(nome);
 });
 
 Given("estou na tela de checkout", () => {

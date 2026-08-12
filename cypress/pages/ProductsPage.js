@@ -20,6 +20,7 @@ class ProductsPage {
     cy.get("[data-test='sort']").select(option);
   }
   addToCartByName(name) {
+    this.search(name);
     cy.contains("[data-test='product-name']", name)
       .parents(".card")
       .find("[data-test='add-to-cart']")
