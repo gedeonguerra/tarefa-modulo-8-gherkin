@@ -9,7 +9,7 @@ class CartPage {
     cy.get("[data-test='quantity']").clear().type(value.toString());
   }
   removeItem() {
-    cy.get("[data-test='remove-line']").click();
+    cy.get(".btn-danger").click();
   }
   emptyCartMessage() {
     return cy.contains("Cart is empty");

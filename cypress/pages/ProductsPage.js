@@ -1,7 +1,7 @@
 class ProductsPage {
   visit() {
-  cy.visit("/");
-}
+    cy.visit("/");
+  }
   search(term) {
     cy.get("[data-test='search-query']").clear().type(term);
     cy.get("[data-test='search-submit']").click();
@@ -13,7 +13,8 @@ class ProductsPage {
     return cy.get(".form-row, .col-md-9").contains("There are no products found.");
   }
   filterByCategory(category) {
-    cy.contains("[data-test^='category']", category).click();
+    cy.get("[data-test='nav-categories']").click();
+    cy.contains(category).click();
   }
   sortBy(option) {
     cy.get("[data-test='sort']").select(option);
