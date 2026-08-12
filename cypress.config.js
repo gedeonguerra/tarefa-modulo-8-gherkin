@@ -14,6 +14,13 @@ module.exports = defineConfig({
         "file:preprocessor",
         createBundler({ plugins: [createEsbuildPlugin(config)] })
       );
+      on("task", {
+        // DEBUG TEMP - remover apos identificar causa raiz do "No request ever occurred"
+        log(message) {
+          console.log(message);
+          return null;
+        },
+      });
       return config;
     },
   },

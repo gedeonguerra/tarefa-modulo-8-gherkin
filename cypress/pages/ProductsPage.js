@@ -1,7 +1,19 @@
 class ProductsPage {
   visit() {
+    // DEBUG TEMP - captura toda request que sai apos o visit, remover apos diagnostico
+    const debugRequests = [];
+    cy.intercept("**", (req) => {
+      debugRequests.push(`${req.method} ${req.url}`);
+    });
     cy.intercept("GET", /\/products(\?.*)?$/).as("getProducts");
     cy.visit("/");
+    cy.wait(3000);
+    cy.then(() => {
+      cy.task(
+        "log",
+        `DEBUG REQUESTS APOS VISIT("/"):\n${debugRequests.join("\n") || "(nenhuma request capturada)"}`
+      );
+    });
     cy.wait("@getProducts", { timeout: 15000 });
   }
   search(term) {
