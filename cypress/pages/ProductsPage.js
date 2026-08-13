@@ -1,23 +1,11 @@
 class ProductsPage {
   visit() {
-    // DEBUG TEMP - captura toda request que sai apos o visit, remover apos diagnostico
-    const debugRequests = [];
-    cy.intercept("**", (req) => {
-      debugRequests.push(`${req.method} ${req.url}`);
-    });
-    cy.intercept("GET", /\/products(\?.*)?$/).as("getProducts");
+    cy.intercept("QUERY", /\/products$/).as("getProducts");
     cy.visit("/");
-    cy.wait(3000);
-    cy.then(() => {
-      cy.task(
-        "log",
-        `DEBUG REQUESTS APOS VISIT("/"):\n${debugRequests.join("\n") || "(nenhuma request capturada)"}`
-      );
-    });
     cy.wait("@getProducts", { timeout: 15000 });
   }
   search(term) {
-    cy.intercept("GET", /\/products\/search(\?.*)?$/).as("searchProducts");
+    cy.intercept("QUERY", /\/products\/search$/).as("searchProducts");
     cy.get("[data-test='search-query']").clear().type(term);
     cy.get("[data-test='search-submit']").click();
     cy.wait("@searchProducts", { timeout: 15000 });
