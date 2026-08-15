@@ -10,8 +10,13 @@ When("eu buscar pelo termo {string}", (termo) => {
 });
 
 Then("devo ver produtos na lista de resultados cujo nome contenha {string}", (termo) => {
-  ProductsPage.productNames().each(($el) => {
-    cy.wrap($el).invoke("text").should("match", new RegExp(termo, "i"));
+  // .should(callback) é reexecutado automaticamente pelo Cypress até passar (ou estourar o timeout),
+  // ao contrário de .each(), que roda uma única vez e pode capturar a lista antiga.
+  ProductsPage.productNames().should(($items) => {
+    expect($items.length, "quantidade de produtos encontrados").to.be.greaterThan(0);
+    $items.each((_, el) => {
+      expect(Cypress.$(el).text().toLowerCase()).to.include(termo.toLowerCase());
+    });
   });
 });
 

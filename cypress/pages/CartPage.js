@@ -6,7 +6,9 @@ class CartPage {
     cy.visit("/checkout");
   }
   setQuantity(value) {
-    cy.get("[data-test='quantity']").clear().type(value.toString());
+    // Na tela do carrinho o campo é [data-test='product-quantity'].
+    // '[data-test="quantity"]' só existe na página de detalhe do produto.
+    cy.get("[data-test='product-quantity']").clear().type(value.toString()).blur();
   }
   removeItem() {
     cy.get(".btn-danger").click();

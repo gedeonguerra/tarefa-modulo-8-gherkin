@@ -27,14 +27,20 @@ When("eu preencher todos os dados de entrega obrigatórios", () => {
   CheckoutPage.proceedFromAddress();
 });
 
-When("selecionar a forma de pagamento {string}", (forma) => {
+function selecionarFormaPagamento(forma) {
   CheckoutPage.selectPaymentMethod(forma);
   if (forma === "Bank Transfer") {
     CheckoutPage.fillBankTransferDetails();
   } else if (forma === "Buy Now Pay Later") {
     CheckoutPage.fillBuyNowPayLaterDetails();
   }
-});
+}
+// O checkout.feature usa duas frases diferentes para esse step:
+//   "E selecionar a forma de pagamento ..."        (cenário de sucesso)
+//   "Quando eu selecionar a forma de pagamento ..." (esquema "Formas de pagamento")
+// As duas variantes precisam estar registradas, senão a 2ª fica "undefined" no Cucumber.
+When("selecionar a forma de pagamento {string}", selecionarFormaPagamento);
+When("eu selecionar a forma de pagamento {string}", selecionarFormaPagamento);
 
 When("confirmar o pedido", () => {
   CheckoutPage.confirmOrder();
