@@ -10,10 +10,17 @@ Before({ tags: "@diag-query" }, () => {
   cy.intercept("QUERY", "**").as("anyQuery");
 });
 
-// Roda mesmo se o cenário falhar. Assertiva explícita para gerar evidência
-// visível no log de texto do CI (cy.intercept sozinho não imprime nada).
+// DIAGNÓSTICO (temporário, escopo: apenas cenários com a tag @diag-query).
+// Este hook SEMPRE falha de propósito — não é uma regressão real. O objetivo
+// é forçar o método/URL de cada requisição QUERY capturada por "anyQuery" a
+// aparecer no log de texto do CI (que não expõe screenshots/vídeo), para
+// comparar com os regex esperados por "getProducts"/"searchProducts" em
+// ProductsPage.js.
 After({ tags: "@diag-query" }, () => {
-  cy.get("@anyQuery.all").should("have.length.greaterThan", 0);
+  cy.get("@anyQuery.all").then((all) => {
+    const detalhes = all.map((i) => `${i.request.method} ${i.request.url}`);
+    throw new Error(`[diag-query] anyQuery capturou ${all.length} requisicao(oes): ${JSON.stringify(detalhes)}`);
+  });
 });
 
 Given("que estou na página inicial da loja", () => {
