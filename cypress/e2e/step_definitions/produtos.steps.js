@@ -1,5 +1,20 @@
-const { Given, When, Then } = require("@badeball/cypress-cucumber-preprocessor");
+const { Given, When, Then, Before, After } = require("@badeball/cypress-cucumber-preprocessor");
 const ProductsPage = require("../../pages/ProductsPage");
+
+// DIAGNÓSTICO (temporário, escopo: apenas cenários com a tag @diag-query).
+// Intercept genérico e aditivo — não substitui nem interfere nos intercepts
+// existentes de ProductsPage ("getProducts"/"searchProducts"). Objetivo único:
+// verificar se o Cypress consegue capturar QUALQUER requisição de método QUERY
+// nesta aplicação, sem restrição de path.
+Before({ tags: "@diag-query" }, () => {
+  cy.intercept("QUERY", "**").as("anyQuery");
+});
+
+// Roda mesmo se o cenário falhar. Assertiva explícita para gerar evidência
+// visível no log de texto do CI (cy.intercept sozinho não imprime nada).
+After({ tags: "@diag-query" }, () => {
+  cy.get("@anyQuery.all").should("have.length.greaterThan", 0);
+});
 
 Given("que estou na página inicial da loja", () => {
   ProductsPage.visit();
