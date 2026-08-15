@@ -22,10 +22,8 @@ class ProductsPage {
   }
   addToCartByName(name) {
     this.search(name);
-    cy.contains("[data-test='product-name']", name)
-      .parents(".card")
-      .find("[data-test='add-to-cart']")
-      .click();
+    cy.contains("[data-test='product-name']", name).click();
+    cy.get("[data-test='add-to-cart']").click();
   }
 }
 module.exports = new ProductsPage();

@@ -56,10 +56,12 @@ When("eu tentar avançar sem preencher o campo {string}", (campo) => {
   };
   const dados = { ...ENDERECO_VALIDO };
   const chave = mapaCampos[campo];
-  CheckoutPage.fillAddress(dados);
+  
   if (chave === "country") {
-    cy.get("[data-test='country']").select("");
+    const { country, ...resto } = dados;
+    CheckoutPage.fillAddress(resto);
   } else {
+    CheckoutPage.fillAddress(dados);
     cy.get(`[data-test='${chave}']`).clear();
   }
   cy.get("body").click();
