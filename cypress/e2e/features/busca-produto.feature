@@ -7,6 +7,7 @@ Funcionalidade: Busca e filtro de produtos
   Contexto:
     Dado que estou na página inicial da loja
 
+  @diag-query
   Cenário: Buscar produto existente pelo nome
     Quando eu buscar pelo termo "Hammer"
     Então devo ver produtos na lista de resultados cujo nome contenha "Hammer"
