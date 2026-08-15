@@ -1,0 +1,56 @@
+diff --git a/cypress/e2e/step_definitions/checkout.steps.js b/cypress/e2e/step_definitions/checkout.steps.js
+index e0d4b85..7c3430d 100644
+--- a/cypress/e2e/step_definitions/checkout.steps.js
++++ b/cypress/e2e/step_definitions/checkout.steps.js
+@@ -50,10 +50,13 @@ When("eu tentar avançar sem preencher o campo {string}", (campo) => {
+   };
+   const dados = { ...ENDERECO_VALIDO };
+   const chave = mapaCampos[campo];
+-  CheckoutPage.fillAddress(dados);
+   if (chave === "country") {
+-    cy.get("[data-test='country']").select("");
++    // Não preenche o país (a option vazia é "disabled", então .select("")
++    // lança erro no Cypress). Preenche apenas os outros campos.
++    const { country, ...resto } = dados;
++    CheckoutPage.fillAddress(resto);
+   } else {
++    CheckoutPage.fillAddress(dados);
+     cy.get(`[data-test='${chave}']`).clear();
+   }
+   cy.get("body").click();
+diff --git a/cypress/pages/CartPage.js b/cypress/pages/CartPage.js
+index 113203b..be58236 100644
+--- a/cypress/pages/CartPage.js
++++ b/cypress/pages/CartPage.js
+@@ -6,7 +6,9 @@ class CartPage {
+     cy.visit("/checkout");
+   }
+   setQuantity(value) {
+-    cy.get("[data-test='quantity']").clear().type(value.toString());
++    // Na página do carrinho o atributo é "product-quantity";
++    // "quantity" (sem prefixo) só existe na página de detalhe do produto.
++    cy.get("[data-test='product-quantity']").clear().type(value.toString());
+   }
+   removeItem() {
+     cy.get(".btn-danger").click();
+diff --git a/cypress/pages/ProductsPage.js b/cypress/pages/ProductsPage.js
+index 2847005..4b793ac 100644
+--- a/cypress/pages/ProductsPage.js
++++ b/cypress/pages/ProductsPage.js
+@@ -21,11 +21,11 @@ class ProductsPage {
+     cy.get("[data-test='sort']").select(option);
+   }
+   addToCartByName(name) {
++    // O botão "add-to-cart" só existe na página de DETALHE do produto,
++    // não no card da listagem. Por isso é necessário navegar até lá antes.
+     this.search(name);
+-    cy.contains("[data-test='product-name']", name)
+-      .parents(".card")
+-      .find("[data-test='add-to-cart']")
+-      .click();
++    cy.contains("[data-test='product-name']", name).click();
++    cy.get("[data-test='add-to-cart']").click();
+   }
+ }
+ module.exports = new ProductsPage();
+\ No newline at end of file
