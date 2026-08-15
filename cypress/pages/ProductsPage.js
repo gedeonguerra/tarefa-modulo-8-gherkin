@@ -1,11 +1,11 @@
 class ProductsPage {
   visit() {
-    cy.intercept("GET", /\/products$/).as("getProducts");
+    cy.intercept("GET", /\/products(\?.*)?$/).as("getProducts");
     cy.visit("/");
     cy.wait("@getProducts", { timeout: 15000 });
   }
   search(term) {
-    cy.intercept("GET", /\/products\/search$/).as("searchProducts");
+    cy.intercept("GET", /\/products\/search(\?.*)?$/).as("searchProducts");
     cy.get("[data-test='search-query']").clear().type(term);
     cy.get("[data-test='search-submit']").click();
     cy.wait("@searchProducts", { timeout: 15000 });
