@@ -30,8 +30,32 @@ jobs:
           node-version: 20
           cache: "npm"
       - run: npm install
-      - name: Wait for app to be ready
-        run: npx wait-on http://localhost:4200 --timeout 600000
+
+      - name: Wait for backend API to be ready
+        run: |
+          echo "Waiting for API on port 8091..."
+          for i in $(seq 1 60); do
+            if curl -s -o /dev/null -w "%{http_code}" http://localhost:8091/status | grep -q "200"; then
+              echo "API is ready!"
+              break
+            fi
+            echo "Attempt $i/60 - not ready yet, waiting 5s..."
+            sleep 5
+          done
+
+      - name: Wait for Angular UI to be ready
+        run: |
+          echo "Waiting for Angular UI on port 4200..."
+          for i in $(seq 1 60); do
+            if curl -s http://localhost:4200 | grep -q "app-root"; then
+              echo "Angular UI is ready!"
+              break
+            fi
+            echo "Attempt $i/60 - not ready yet, waiting 5s..."
+            sleep 5
+          done
+          echo "Giving the app a bit more time to warm up..."
+          sleep 20
 
       - name: Run Cypress
         uses: cypress-io/github-action@v6

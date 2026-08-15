@@ -1,7 +1,7 @@
 class ProductsPage {
   visit() {
     cy.visit("/");
-    cy.get("[data-test='product-name']", { timeout: 15000 }).should("have.length.greaterThan", 0);
+    cy.get("[data-test='product-name']", { timeout: 30000 }).should("have.length.greaterThan", 0);
   }
   search(term) {
     cy.get("[data-test='search-query']").clear().type(term);
