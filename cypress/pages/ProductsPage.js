@@ -1,14 +1,11 @@
 class ProductsPage {
   visit() {
-    cy.intercept("GET", /\/products(\?.*)?$/).as("getProducts");
     cy.visit("/");
-    cy.wait("@getProducts", { timeout: 15000 });
+    cy.get("[data-test='product-name']", { timeout: 15000 }).should("have.length.greaterThan", 0);
   }
   search(term) {
-    cy.intercept("GET", /\/products\/search(\?.*)?$/).as("searchProducts");
     cy.get("[data-test='search-query']").clear().type(term);
     cy.get("[data-test='search-submit']").click();
-    cy.wait("@searchProducts", { timeout: 15000 });
   }
   productNames() {
     return cy.get("[data-test='product-name']");
