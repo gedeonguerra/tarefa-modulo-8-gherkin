@@ -7,6 +7,7 @@ module.exports = defineConfig({
   e2e: {
     baseUrl: "http://localhost:4200",
     defaultCommandTimeout: 20000,
+
     specPattern: "cypress/e2e/features/**/*.feature",
     async setupNodeEvents(on, config) {
       await addCucumberPreprocessorPlugin(on, config);
