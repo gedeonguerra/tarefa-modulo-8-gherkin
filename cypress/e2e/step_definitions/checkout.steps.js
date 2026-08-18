@@ -35,10 +35,7 @@ function selecionarFormaPagamento(forma) {
     CheckoutPage.fillBuyNowPayLaterDetails();
   }
 }
-// O checkout.feature usa duas frases diferentes para esse step:
-//   "E selecionar a forma de pagamento ..."        (cenário de sucesso)
-//   "Quando eu selecionar a forma de pagamento ..." (esquema "Formas de pagamento")
-// As duas variantes precisam estar registradas, senão a 2ª fica "undefined" no Cucumber.
+
 When("selecionar a forma de pagamento {string}", selecionarFormaPagamento);
 When("eu selecionar a forma de pagamento {string}", selecionarFormaPagamento);
 
@@ -56,10 +53,9 @@ When("eu tentar avançar sem preencher o campo {string}", (campo) => {
   };
   const dados = { ...ENDERECO_VALIDO };
   const chave = mapaCampos[campo];
-  
+
   if (chave === "country") {
-    const { country, ...resto } = dados;
-    CheckoutPage.fillAddress(resto);
+    cy.get("[data-test='country']").invoke("val", "").trigger("change");
   } else {
     CheckoutPage.fillAddress(dados);
     cy.get(`[data-test='${chave}']`).clear();

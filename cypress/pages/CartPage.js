@@ -3,7 +3,7 @@ class CartPage {
     return cy.get("[data-test='cart-quantity']");
   }
   visit() {
-    cy.visit("/checkout");
+    cy.get("[data-test='cart-quantity']").click();
   }
   setQuantity(value) {
     cy.get("[data-test='product-quantity']").clear().type(value.toString()).blur();
@@ -12,7 +12,7 @@ class CartPage {
     cy.get(".btn-danger").click();
   }
   emptyCartMessage() {
-    return cy.contains("Cart is empty");
+    return cy.contains("The cart is empty");
   }
 }
 module.exports = new CartPage();

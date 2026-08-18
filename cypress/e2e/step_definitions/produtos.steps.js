@@ -10,8 +10,7 @@ When("eu buscar pelo termo {string}", (termo) => {
 });
 
 Then("devo ver produtos na lista de resultados cujo nome contenha {string}", (termo) => {
-  // .should(callback) é reexecutado automaticamente pelo Cypress até passar (ou estourar o timeout),
-  // ao contrário de .each(), que roda uma única vez e pode capturar a lista antiga.
+  
   ProductsPage.productNames().should(($items) => {
     expect($items.length, "quantidade de produtos encontrados").to.be.greaterThan(0);
     $items.each((_, el) => {
