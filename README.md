@@ -1,21 +1,25 @@
-# BDD/Gherkin + Cypress — Practice Software Testing
+# BDD/Gherkin + Cypress — Practice Software Testing (Toolshop)
 
 > Projeto de estudo/exercício de curso — mantido e expandido como registro de aprendizado em BDD.
 
-Automação BDD com **Cypress + Cucumber** sobre o [Practice Software Testing](https://practicesoftwaretesting.com/), cobrindo login, busca/filtro de produtos, carrinho e checkout.
+Automação BDD com **Cypress + Cucumber** sobre o [Practice Software Testing](https://practicesoftwaretesting.com/) ("Toolshop"), cobrindo login, busca/filtro de produtos, carrinho e checkout.
 
 Esta é a branch de automação com **Cypress**. Veja também:
 - Branch [`playwright-automation`](../../tree/playwright-automation) — mesma especificação, automatizada com Playwright
 - Branch [`main`](../../tree/main) — apenas a especificação Gherkin, sem automação
 
+## Status
+
+27/27 cenários passando localmente e no CI (GitHub Actions), contra uma instância local do Practice Software Testing (via Docker).
+
 ## Stack
 
 - [Cypress](https://www.cypress.io/) `>= 15.x` (**requisito obrigatório**, ver nota abaixo)
-- [@badeball/cypress-cucumber-preprocessor](https://github.com/badeball/cypress-cucumber-preprocessor)
+- [@badeball/cypress-cucumber-preprocessor](https://github.com/badeball/cypress-cucumber-preprocessor) `>= 26.x`
 - GitHub Actions (CI)
-- App sob teste rodado localmente via `docker compose` (não usa mais o site público de terceiro)
+- Docker Compose (app sob teste rodando localmente no CI)
 
-> ⚠️ **Requisito de versão do Cypress:** o app sob teste usa o método HTTP `QUERY` (RFC 10008) para listagem/busca de produtos. Versões do Cypress anteriores à 15.x não suportam esse método corretamente (a requisição sai malformada e o backend retorna 400), quebrando `busca-produto.feature`, `carrinho.feature` e `checkout.feature`. Sempre usar Cypress `>= 15.x`.
+> ⚠️ **Requisito de versão do Cypress:** o app sob teste usa o método HTTP `QUERY` (RFC 10008) para listagem/busca de produtos. Versões do Cypress anteriores à 15.x não suportam esse método corretamente (a requisição sai malformada e o backend retorna 400), quebrando `busca-produto.feature`, `carrinho.feature` e `checkout.feature`. Sempre usar Cypress `>= 15.x` — o que também exige `@badeball/cypress-cucumber-preprocessor` `>= 26.x` (versões anteriores travam por incompatibilidade de peer dependency).
 
 ## Estrutura
 
@@ -39,11 +43,22 @@ cypress/
 
 ## Como rodar
 
-O app sob teste (`testsmith-io/practice-software-testing`) precisa estar rodando localmente via `docker compose` antes dos testes — ver `.github/workflows/cypress.yml` para os passos completos (clone, subir containers, ajustar permissões, migrar/seed).
+O app sob teste precisa estar rodando localmente antes dos testes:
+
+```bash
+git clone https://github.com/testsmith-io/practice-software-testing.git app-under-test
+cd app-under-test
+docker compose up -d
+docker compose exec -T -u root laravel-api chown -R www-data:www-data storage bootstrap/cache
+docker compose exec -T laravel-api php artisan migrate:refresh --seed
+cd ..
+```
+
+Depois, na pasta deste projeto:
 
 ```bash
 npm install
-npm test          # headless
+npm test          # headless, Chrome
 npm run test:open # modo interativo
 ```
 
@@ -51,4 +66,4 @@ npm run test:open # modo interativo
 
 ## Autor
 **Gedeon Guerra**
-QA | Testes Manuais e Automação | BDD/Gherkin
+QA Engineer | SDET | Quality Assurance & Test Automation |
