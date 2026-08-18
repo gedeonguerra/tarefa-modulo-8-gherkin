@@ -1,8 +1,8 @@
-# BDD/Gherkin + Playwright — Practice Software Testing
+# BDD/Gherkin + Playwright — Practice Software Testing (Toolshop)
 
 > Projeto de estudo/exercício de curso — mantido e expandido como registro de aprendizado em BDD.
 
-Automação BDD com **Playwright + playwright-bdd** sobre o [Practice Software Testing](https://practicesoftwaretesting.com/), cobrindo login, busca/filtro de produtos, carrinho e checkout.
+Automação BDD com **Playwright + playwright-bdd** sobre o [Practice Software Testing](https://practicesoftwaretesting.com/) ("Toolshop"), cobrindo login, busca/filtro de produtos, carrinho e checkout.
 
 Esta é a branch de automação com **Playwright**. Veja também:
 - Branch [`cypress-automation`](../../tree/cypress-automation) — mesma especificação, automatizada com Cypress
@@ -10,7 +10,7 @@ Esta é a branch de automação com **Playwright**. Veja também:
 
 ## Status
 
-27/27 cenários passando localmente contra uma instância local do Practice Software Testing (via Docker). CI configurado no GitHub Actions.
+27/27 cenários passando localmente e no CI (GitHub Actions), contra uma instância local do Practice Software Testing (via Docker).
 
 ## Stack
 
@@ -45,6 +45,7 @@ O app sob teste precisa estar rodando localmente antes dos testes:
 git clone https://github.com/testsmith-io/practice-software-testing.git app-under-test
 cd app-under-test
 docker compose up -d
+docker compose exec -T -u root laravel-api chown -R www-data:www-data storage bootstrap/cache
 docker compose exec -T laravel-api php artisan migrate:refresh --seed
 cd ..
 ```
@@ -60,8 +61,8 @@ npm run test:headed
 
 > Os testes rodam com `workers: 1` (configurado em `playwright.config.js`). O app roda em modo dev (`ng serve`), sem build de produção, e a suíte compartilha usuário/carrinho entre os cenários — execução em paralelo (múltiplos workers) pode gerar condições de corrida e falsos negativos.
 
-> Os seletores (`data-test`) seguem a convenção documentada pelo Practice Software Testing. Se o site atualizar a versão, pode ser necessário revisar os Page Objects.
+> Os seletores (`data-test`) seguem a convenção do Practice Software Testing. Como o app é um repositório de terceiro clonado a cada execução, seus atributos `data-test` podem mudar entre versões — se algum teste passar a falhar em elemento não encontrado, vale conferir o HTML real antes de assumir bug no teste.
 
 ## Autor
 **Gedeon Guerra**
-QA | Testes Manuais e Automação | BDD/Gherkin
+QA Engineer | SDET | Quality Assurance & Test Automation |
