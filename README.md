@@ -41,4 +41,4 @@ A branch `main` contém apenas a especificação (os arquivos `.feature`), sem a
 
 ## Autor
 **Gedeon Guerra**
-QA | Testes Manuais e Automação | BDD/Gherkin
+QA Engineer | SDET | Quality Assurance & Test Automation |
